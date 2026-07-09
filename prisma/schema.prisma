@@ -1,0 +1,133 @@
+// Numlysms — Prisma schema
+// DB: Supabase Postgres. Auth identity (id) comes from Supabase Auth (auth.users.id),
+// so User.id is NOT auto-generated here — it's set to the Supabase auth user id on first login.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum OrderStatus {
+  pending    // number requested, waiting on XeroSMS
+  active     // number issued, waiting for SMS
+  completed  // SMS received, order fulfilled
+  cancelled  // user or system cancelled before completion
+  expired    // number expired with no SMS
+  failed     // purchase failed (API or DB error)
+  refunded   // wallet balance returned to user
+}
+
+enum TransactionType {
+  deposit
+  purchase
+  refund
+  admin_adjustment
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
+}
+
+model User {
+  id        String   @id // Supabase auth.users.id
+  email     String   @unique
+  name      String?
+  role      String   @default("user") // "user" | "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet       Wallet?
+  orders       Order[]
+  transactions Transaction[]
+
+  @@index([email])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Store as integer minor units (kobo/cents) — never floats — to avoid decimal drift.
+  balance   BigInt   @default(0)
+  currency  String   @default("NGN")
+  version   Int      @default(0) // optimistic concurrency token, incremented on every balance write
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Transaction {
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           TransactionType
+  status         TransactionStatus @default(pending)
+  amount         BigInt            // minor units, always positive; direction implied by `type`
+  balanceAfter   BigInt?           // wallet balance snapshot after this txn committed
+  currency       String            @default("NGN")
+  // Idempotency key: client/webhook-supplied, unique per user+key so retried requests
+  // (double-tap, webhook redelivery, network retry) never double-apply.
+  idempotencyKey String
+  orderId        String?
+  order          Order?            @relation(fields: [orderId], references: [id])
+  paystackRef    String?           @unique
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          OrderStatus @default(pending)
+  country         String
+  countryCode     String
+  service         String
+  serviceCode     String
+  price           BigInt      // minor units, price charged at time of purchase (server-priced, never client-supplied)
+  currency        String      @default("NGN")
+  // XeroSMS identifiers
+  xeroOrderId     String?     @unique
+  phoneNumber     String?
+  // Idempotency key supplied by the client on purchase initiation, scoped per user.
+  idempotencyKey  String
+  expiresAt       DateTime?
+  cancelledReason String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  transactions Transaction[]
+  messages     SmsMessage[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId])
+  @@index([status])
+  @@index([xeroOrderId])
+}
+
+model SmsMessage {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sender    String
+  content   String
+  // XeroSMS message id, used to de-duplicate messages returned by repeated polling.
+  xeroMsgId String   @unique
+  receivedAt DateTime @default(now())
+
+  @@index([orderId])
+}

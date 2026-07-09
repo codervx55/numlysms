@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npx next build
+        env:
+          # Dummy values so `next build` doesn't fail on missing env vars.
+          # No real DB/API calls happen at build time — only during requests.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          DATABASE_URL: postgresql://user:pass@localhost:5432/placeholder
+          DIRECT_URL: postgresql://user:pass@localhost:5432/placeholder
+          XEROSMS_API_KEY: placeholder
+          PAYSTACK_SECRET_KEY: placeholder

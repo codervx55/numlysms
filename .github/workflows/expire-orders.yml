@@ -1,0 +1,18 @@
+name: Expire orders sweep
+
+on:
+  schedule:
+    # Every 10 minutes. Note: GitHub's free-tier cron can drift/queue under load,
+    # same as you saw with the AOMZIIP reports bot — this is a backstop for
+    # abandoned orders, not a time-critical job, so a few minutes of drift is fine.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit expiry sweep endpoint
+        run: |
+          curl -sf -X GET "${{ secrets.APP_URL }}/api/cron/expire-orders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
