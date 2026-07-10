@@ -199,7 +199,7 @@ export default async function RootPage() {
             <h3 className="font-medium text-[var(--amber)]">Support that responds</h3>
             <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
               Real people behind the dashboard. Reach out any time an order
-              looks off and we'll sort it out quickly.
+              looks off and we&apos;ll sort it out quickly.
             </p>
           </div>
         </div>
