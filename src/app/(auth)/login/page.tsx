@@ -1,37 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkEmail, setCheckEmail] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    setLoading(false);
-    if (signInError) {
-      setError(signInError.message === "Invalid login credentials"
-        ? "That email and password combination doesn't match our records."
-        : signInError.message);
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
 
-    router.push(searchParams.get("redirectTo") ?? "/dashboard");
-    router.refresh();
+    setLoading(true);
+    const supabase = createClient();
+    const { error: signUpError } = await supabase.auth.signUp({ email, password });
+    setLoading(false);
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+
+    setCheckEmail(true);
+  }
+
+  if (checkEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="panel p-6 max-w-sm text-center space-y-2">
+          <div className="text-2xl">📩</div>
+          <h1 className="font-medium">Check your inbox</h1>
+          <p className="text-sm text-[var(--text-muted)]">
+            We sent a confirmation link to {email}. Follow it to activate your account.
+          </p>
+          <Link href="/login" className="inline-block text-sm text-[var(--amber)] hover:underline pt-2">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -39,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="font-mono-board text-2xl tracking-widest text-[var(--amber)]">NUMLYSMS</div>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Sign in to your dashboard</p>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Create your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="panel p-6 space-y-4">
@@ -68,22 +85,23 @@ export default function LoginPage() {
               id="password"
               type="password"
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg bg-[var(--panel-raised)] border border-[var(--border)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--amber)]/50 focus:border-[var(--amber)]"
             />
+            <p className="text-xs text-[var(--text-muted)] mt-1">At least 8 characters.</p>
           </div>
 
           <Button type="submit" loading={loading} className="w-full">
-            Sign in
+            Create account
           </Button>
         </form>
 
         <p className="text-center text-sm text-[var(--text-muted)] mt-4">
-          No account?{" "}
-          <Link href="/signup" className="text-[var(--amber)] hover:underline">
-            Create one
+          Already have an account?{" "}
+          <Link href="/login" className="text-[var(--amber)] hover:underline">
+            Sign in
           </Link>
         </p>
       </div>
