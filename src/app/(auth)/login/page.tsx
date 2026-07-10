@@ -6,9 +6,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +21,11 @@ export default function LoginPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    });
+
     setLoading(false);
 
     if (signInError) {
@@ -37,19 +42,28 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="font-mono-board text-2xl tracking-widest text-[var(--amber)]">NUMLYSMS</div>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Sign in to your account</p>
+          <div className="font-mono-board text-2xl tracking-widest text-[var(--amber)]">
+            NUMLYSMS
+          </div>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Sign in to your account
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="panel p-6 space-y-4">
           {error && (
-            <div role="alert" className="text-sm text-[var(--coral)] bg-[var(--coral)]/10 border border-[var(--coral)]/30 rounded-lg px-3 py-2">
+            <div
+              role="alert"
+              className="text-sm text-[var(--coral)] bg-[var(--coral)]/10 border border-[var(--coral)]/30 rounded-lg px-3 py-2"
+            >
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm text-[var(--text-muted)] mb-1.5">Email</label>
+            <label htmlFor="email" className="block text-sm text-[var(--text-muted)] mb-1.5">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -62,7 +76,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-[var(--text-muted)] mb-1.5">Password</label>
+            <label htmlFor="password" className="block text-sm text-[var(--text-muted)] mb-1.5">
+              Password
+            </label>
             <input
               id="password"
               type="password"
