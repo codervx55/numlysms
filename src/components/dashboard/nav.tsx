@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/ui/logo";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "◆" },
@@ -14,8 +15,8 @@ export function SidebarNav() {
   const pathname = usePathname();
   return (
     <nav className="hidden md:flex flex-col w-56 shrink-0 border-r border-[var(--border)] p-4 gap-1">
-      <div className="font-mono-board text-lg tracking-widest text-[var(--amber)] px-2 mb-6">
-        NUMLYSMS
+      <div className="px-2 mb-6">
+        <Logo size="sm" />
       </div>
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href;

@@ -19,7 +19,7 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      <section className="panel p-6">
+      <section className="panel p-6 animate-fade-in-up">
         <p className="text-sm text-[var(--text-muted)]">Wallet balance</p>
         <p className="font-mono-board text-3xl text-[var(--mint)] mt-1">
           {formatMinor(wallet?.balance ?? 0n)}
@@ -34,7 +34,7 @@ export default async function DashboardHomePage() {
         </div>
       </section>
 
-      <section>
+      <section className="animate-fade-in-up" style={{ animationDelay: "80ms" }}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-medium text-[var(--text-muted)]">Recent orders</h2>
           <Link href="/dashboard/orders" className="text-sm text-[var(--amber)] hover:underline">
@@ -54,11 +54,12 @@ export default async function DashboardHomePage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {recentOrders.map((order) => (
+            {recentOrders.map((order, i) => (
               <Link
                 key={order.id}
                 href={`/dashboard/orders/${order.id}`}
-                className="panel flex items-center justify-between p-4 hover:border-[var(--amber)]/40 transition-colors"
+                className="panel interactive-lift animate-fade-in-up flex items-center justify-between p-4 hover:border-[var(--amber)]/40 transition-colors"
+                style={{ animationDelay: `${120 + i * 40}ms` }}
               >
                 <div>
                   <p className="font-mono-board text-sm">{order.phoneNumber ?? "Provisioning…"}</p>

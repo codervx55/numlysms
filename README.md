@@ -79,6 +79,31 @@ src/
    under load — fine here since this is a backstop, not time-critical.
 8. `npm run dev` locally.
 
+## Deploying to Render (free tier)
+
+1. Push this repo to GitHub (already done).
+2. Go to **dash.render.com** → **New** → **Blueprint** → connect the
+   `codervx55/numlysms` repo. Render reads `render.yaml` automatically and
+   proposes the `numlysms` web service.
+3. When prompted, paste in every variable from `.env.example` (Supabase keys,
+   `DATABASE_URL`/`DIRECT_URL`, XeroSMS key, Paystack keys, `CRON_SECRET`).
+4. Deploy. `npm start` runs `prisma migrate deploy` before `next start`, same
+   as the Railway setup, so schema changes apply automatically on every deploy.
+5. Update the GitHub Actions cron secret: set `APP_URL` (repo → Settings →
+   Secrets and variables → Actions) to your Render URL, e.g.
+   `https://numlysms.onrender.com`.
+6. Point Paystack's webhook at `https://numlysms.onrender.com/api/wallet/webhook`.
+
+**Free-tier behavior worth knowing:** Render's free web services sleep after 15
+minutes with no traffic, then cold-start (30–60s) on the next request. Your
+`expire-orders` GitHub Action already pings the app every 10 minutes — more
+often than the 15-minute sleep window — so in practice the app should stay
+warm without any extra work. The one edge case: if a Paystack webhook lands
+while the app happens to be asleep, that request eats the cold-start delay.
+Paystack retries failed/timed-out webhooks, so this isn't silently lost money,
+just a delayed credit. If that delay becomes a problem, Render's paid tier
+($7/mo) removes the sleep behavior entirely.
+
 ## Deploying to Railway
 
 1. Push this repo to GitHub, then create a new Railway project from it.

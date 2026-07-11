@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SidebarNav, BottomNav } from "@/components/dashboard/nav";
 import { ToastProvider } from "@/components/ui/toast";
 import { WalletHeaderBadge } from "@/components/dashboard/wallet-header-badge";
+import { Logo } from "@/components/ui/logo";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -18,8 +19,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <SidebarNav />
         <div className="flex-1 flex flex-col min-w-0">
           <header className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-[var(--border)]">
-            <div className="font-mono-board text-sm tracking-widest text-[var(--amber)] md:hidden">
-              NUMLYSMS
+            <div className="md:hidden">
+              <Logo size="sm" />
             </div>
             <div className="hidden md:block" />
             <WalletHeaderBadge />

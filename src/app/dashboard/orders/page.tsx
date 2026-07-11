@@ -60,7 +60,7 @@ export default function OrdersPage() {
               <Link
                 key={order.id}
                 href={`/dashboard/orders/${order.id}`}
-                className="panel flex items-center justify-between p-4 hover:border-[var(--amber)]/40 transition-colors"
+                className="panel interactive-lift flex items-center justify-between p-4 hover:border-[var(--amber)]/40 transition-colors"
               >
                 <div>
                   <p className="font-mono-board text-sm">{order.phoneNumber ?? "Provisioning…"}</p>

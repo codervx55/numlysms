@@ -10,8 +10,15 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Numlysms — Virtual numbers, live SMS",
-  description: "Buy virtual phone numbers and receive SMS verification codes instantly.",
+  title: "Numlysms — Virtual Numbers & Instant SMS Verification",
+  description:
+    "Rent virtual phone numbers and receive SMS verification codes instantly across 190+ countries. Transparent pricing, automatic refunds, live delivery.",
+  openGraph: {
+    title: "Numlysms — Virtual Numbers & Instant SMS Verification",
+    description:
+      "Rent virtual phone numbers and receive SMS verification codes instantly across 190+ countries.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

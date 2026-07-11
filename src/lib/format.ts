@@ -1,4 +1,4 @@
-export function formatMinor(amountMinor: string | bigint, currency = "NGN") {
+export function formatMinor(amountMinor: string | bigint | number, currency = "NGN") {
   const value = Number(BigInt(amountMinor)) / 100;
   return new Intl.NumberFormat("en-NG", { style: "currency", currency }).format(value);
 }

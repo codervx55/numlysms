@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -56,9 +55,9 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="font-mono-board text-2xl tracking-widest text-[var(--amber)]">NUMLYSMS</div>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Create your account</p>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Logo size="lg" />
+          <p className="text-sm text-[var(--text-muted)] mt-2">Create your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="panel p-6 space-y-4">

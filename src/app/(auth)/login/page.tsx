@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -37,9 +38,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="font-mono-board text-2xl tracking-widest text-[var(--amber)]">NUMLYSMS</div>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Sign in to your dashboard</p>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Logo size="lg" />
+          <p className="text-sm text-[var(--text-muted)] mt-2">Sign in to your dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="panel p-6 space-y-4">
@@ -88,5 +89,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

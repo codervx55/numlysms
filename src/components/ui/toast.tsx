@@ -36,7 +36,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`panel border-l-4 px-4 py-3 text-sm shadow-lg animate-in fade-in slide-in-from-bottom-2 ${variantStyles[t.variant]}`}
+            className={`panel border-l-4 px-4 py-3 text-sm shadow-lg toast-enter ${variantStyles[t.variant]}`}
           >
             {t.message}
           </div>
