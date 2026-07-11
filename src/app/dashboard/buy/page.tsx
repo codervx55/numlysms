@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatMinor } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,19 @@ import { useToast } from "@/components/ui/toast";
 
 type Country = { code: string; name: string };
 type Service = { code: string; name: string; priceMinor: number; currency: string };
+type Platform = { label: string; emoji: string; color: string; match: string[] };
+
+// Quick-select shortcuts for the platforms people actually come here for.
+// Using color + emoji rather than official logos deliberately — keeps this
+// visually recognizable without reproducing anyone's brand mark.
+const PLATFORMS: Platform[] = [
+  { label: "WhatsApp", emoji: "💬", color: "#25D366", match: ["whatsapp"] },
+  { label: "Telegram", emoji: "✈️", color: "#229ED9", match: ["telegram"] },
+  { label: "Instagram", emoji: "📷", color: "#E1306C", match: ["instagram"] },
+  { label: "Facebook", emoji: "👍", color: "#1877F2", match: ["facebook"] },
+  { label: "TikTok", emoji: "🎵", color: "#111111", match: ["tiktok"] },
+  { label: "Google", emoji: "✉️", color: "#EA4335", match: ["google"] },
+];
 
 export default function BuyPage() {
   const router = useRouter();
@@ -17,6 +30,7 @@ export default function BuyPage() {
   const [services, setServices] = useState<Service[] | null>(null);
   const [country, setCountry] = useState<Country | null>(null);
   const [service, setService] = useState<Service | null>(null);
+  const [platform, setPlatform] = useState<Platform | null>(null);
   const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
@@ -36,6 +50,26 @@ export default function BuyPage() {
       .then((data) => setServices(data.services))
       .catch(() => show("Couldn't load services for this country.", "error"));
   }
+
+  function togglePlatform(p: Platform) {
+    setPlatform((current) => (current?.label === p.label ? null : p));
+    setService(null);
+  }
+
+  // Filter the loaded services down to whichever platform is selected, but
+  // never leave the user with an empty screen — if nothing matches, fall
+  // back to showing everything with a note, rather than a dead end.
+  const { visibleServices, filterMissed } = useMemo(() => {
+    if (!services) return { visibleServices: null, filterMissed: false };
+    if (!platform) return { visibleServices: services, filterMissed: false };
+
+    const matched = services.filter((s) =>
+      platform.match.some((keyword) => s.name.toLowerCase().includes(keyword))
+    );
+    return matched.length > 0
+      ? { visibleServices: matched, filterMissed: false }
+      : { visibleServices: services, filterMissed: true };
+  }, [services, platform]);
 
   async function handlePurchase() {
     if (!country || !service || purchasing) return;
@@ -75,8 +109,38 @@ export default function BuyPage() {
       <div>
         <h1 className="text-lg font-medium">Buy a virtual number</h1>
         <p className="text-sm text-[var(--text-muted)]">
-          Choose a country and service to get a number that receives SMS instantly.
+          Get a number that receives SMS instantly — verify WhatsApp, Telegram,
+          Instagram, Facebook, TikTok, and more.
         </p>
+      </div>
+
+      <div>
+        <label className="block text-sm text-[var(--text-muted)] mb-2">Popular platforms</label>
+        <div className="flex flex-wrap gap-2">
+          {PLATFORMS.map((p) => {
+            const active = platform?.label === p.label;
+            return (
+              <button
+                key={p.label}
+                onClick={() => togglePlatform(p)}
+                className={`flex items-center gap-2 pl-2 pr-3 py-2 rounded-full border text-sm transition-all ${
+                  active
+                    ? "border-transparent text-white"
+                    : "border-[var(--border)] bg-[var(--panel)] text-[var(--text-primary)] hover:border-[var(--text-muted)]"
+                }`}
+                style={active ? { background: p.color } : undefined}
+              >
+                <span
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                  style={{ background: active ? "rgba(255,255,255,0.2)" : `${p.color}1A` }}
+                >
+                  {p.emoji}
+                </span>
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div>
@@ -109,7 +173,18 @@ export default function BuyPage() {
 
       {country && (
         <div>
-          <label className="block text-sm text-[var(--text-muted)] mb-2">2. Service</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm text-[var(--text-muted)]">2. Service</label>
+            {platform && (
+              <button
+                onClick={() => setPlatform(null)}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-1"
+              >
+                Showing {platform.label} <span aria-hidden>✕</span>
+              </button>
+            )}
+          </div>
+
           {services === null ? (
             <div className="space-y-2">
               <Skeleton className="h-14" />
@@ -121,7 +196,12 @@ export default function BuyPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {services.map((s) => (
+              {filterMissed && (
+                <p className="text-xs text-[var(--text-muted)] px-1">
+                  No {platform?.label} listing for {country.name} right now — showing all services instead.
+                </p>
+              )}
+              {visibleServices?.map((s) => (
                 <button
                   key={s.code}
                   onClick={() => setService(s)}
